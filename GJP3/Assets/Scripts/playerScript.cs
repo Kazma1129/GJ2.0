@@ -1,14 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class playerScript : MonoBehaviour
 {
-    public float health;
-    public bool isHited = true;
+    public bool isHited = false;
     public float speed;
     private Rigidbody2D myRigidbody;
     private Vector3 change;
+    public int daño;
+    public ParticleSystem particleHit;
+    public ParticleSystem particleDeath;
+
 
     void Start()
     {
@@ -25,29 +29,42 @@ public class playerScript : MonoBehaviour
             transform.Translate(new Vector3(change.x, change.y));
         }
 
-        if (health < 1)
+        if (GameManager.Instance.health <= 0)
         {
-            Destroy(this.gameObject);
+            particleDeath.Play();
+
+            GameManager.Instance.isAlive = false;
+            Destroy(this.gameObject,.5f);
         }
     }
 
+    //destruye enemigo si sale del margen de la camara
+   /* void OnBecameInvisible()
+    {
+        GameManager.Instance.isAlive = false;
+        Destroy(this.gameObject);
+    }
+   */
+
+
     IEnumerator immunity()
     {
-        isHited = false;
+        // tiempo de inmunidad si el jugador es golpeado.
         yield return new WaitForSeconds(0.5f);
-        isHited = true;
+        isHited = false;
     }
 
     void OnTriggerEnter2D(Collider2D target)
     {
         if (target.tag == "Enemy")
         {
-            if (isHited)
-            {
+            isHited = true;
+           
+                particleHit.Play();
+
+                GameManager.Instance.health--;
                 StartCoroutine(immunity());
-                health--;
-                HealthNumber.getHealth(health);
-            }
+            
 
         }
 
